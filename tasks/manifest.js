@@ -82,6 +82,41 @@ module.exports = function (grunt) {
           contents += encodeURI(item) + '\n';
         });
       }
+	  
+	  // add files from network dump
+      if (options.networkHTTPArchive) {
+          // Pick out the {"url": "http://foo.bar.baz/"} entries from the HTTP Archive (HAR)
+          // https://developers.google.com/chrome-developer-tools/docs/network#saving_network_data
+
+          var patternMatchURL = /"url": "(http|https):\/\/[a-zA-z0-9]+[.][a-zA-Z]+[.][a-zA-Z]+(\/[a-zA-Z%20]*)*.*/m;
+          var patternNonEsriServiceMatch = /(http|https):\/\/(?!geocode)(?!logistics)(?!traffic)(?!route)(?!analysis)(?!geoenrich)(?!utility)[a-zA-Z0-9]+\.(?!arcgisonline)[a-zA-Z]+\.[a-zA-z]+(\/[a-zA-Z%20]*)*.*/m;
+
+          // Check if the build Http archive file exists.
+          if (!grunt.file.exists(options.networkHTTPArchive)) {
+              // Warn the user if the file doesn't exist.
+              grunt.log.warn('Template file "' + options.networkHTTPArchive + '" not found.');
+              contents += "# In order to write the manifest from an HTTP archive file,\n# You must capture your network traffic using the Google Chrome Developer Tools Network Tab.\n";
+          } else {
+              contents += "# Contents from the HTTP Archive file.\n";
+              // Read the build HAR file and pull out the matching URL lines of text
+              var networkHARFile = grunt.file.read(options.networkHTTPArchive);
+              var networkHARItemsArray = networkHARFile.split("\n");
+
+              networkHARItemsArray.forEach(function (networkHARItem) {
+                  if (patternMatchURL.test(networkHARItem)) {
+                      // e.g., {"url": "http://foo.bar.baz/"},
+                      // Get the indexes to pull out just the URL
+                      var startIndex = networkHARItem.indexOf("http");
+                      var endIndex = networkHARItem.length - 2;
+                      var itemSubString = networkHARItem.substring(startIndex, endIndex);
+
+                      if (patternNonEsriServiceMatch.test(itemSubString)) {
+                          contents += itemSubString + '\n';
+                      }
+                  }
+              });
+          }
+      }
 
       // add files to explicit cache
       if (files) {

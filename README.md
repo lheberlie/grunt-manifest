@@ -108,6 +108,12 @@ Default: `true`
 
 Adds a meta "copyright" comment.
 
+#### networkHTTPArchive
+Type: `String`		
+Default: `undefined`
+
+This tells the manifest task where to find the HTTP Archive file under your current directory. e.g., (**network_archives/build.har**).  Using Google Chrome Developer Tools you can capture the network waterfall and save that information to an archive file.  This will take the browser's web traffic and write it to your manifest file.  The file name is not important, it would be whatever you saved the file as.
+
 #### timestamp
 Type: `Boolean`		
 Default: `true`	
