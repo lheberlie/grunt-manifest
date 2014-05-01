@@ -64,6 +64,10 @@ module.exports = function (grunt) {
       if (options.timestamp) {
         contents += '# Time: ' + new Date() + '\n';
       }
+      
+      if (options.banner){
+          contents += options.banner;
+      }
 
       if (options.revision) {
         contents += '# Revision: ' + options.revision + '\n';
